@@ -27,7 +27,6 @@ define("IV_BYTES", 16);
 function commit_post($text, $jsCrypt, $lifetime_seconds, $short = false)
 {
 	global $db;
-	dump($db, '$db');
     do {
         $urlKey = PasswordGenerator::getAlphaNumericPassword($short ? 8 : 22);
     } while( retrieve_post( $urlKey ) !== false );
