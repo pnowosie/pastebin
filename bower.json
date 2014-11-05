@@ -1,0 +1,31 @@
+{
+  "name": "pastebin",
+  "version": "0.1.0",
+  "homepage": "https://github.com/pnowosie/pastebin",
+  "description": "A minimalist, opensource online pastebin where the server has zero knowledge of pasted data.",
+  "main": "index.php",
+  "keywords": [
+    "zerobin",
+    "securebin",
+    "pastebin"
+  ],
+  "authors": [
+    "Taylor Hornby",
+    "Pawel Nowosielski"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "vendor/",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.1",
+    "sjcl": "~1.0.0",
+    "bootstrap": "~3.3.0"
+  }
+}
