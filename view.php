@@ -9,25 +9,25 @@
 require_once('src/pastebin.php');
 
 // Never show a post over an insecure connection
-if($_SERVER["HTTPS"] != "on") {
+/*if($_SERVER["HTTPS"] != "on") {
    header("HTTP/1.1 301 Moved Permanently");
    header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
    die();
-}
+}*/
 
 delete_expired_posts();
 
-if (strpos($_SERVER['HTTP_HOST'], "bin.defuse.ca") !== false) {
+/*if (strpos($_SERVER['HTTP_HOST'], "bin.defuse.ca") !== false) {
     $urlKey = substr($_SERVER['REQUEST_URI'], 1);
     header("Location: https://defuse.ca/b/{$urlKey}");
     die();
-}
+}*/
 
 $keyEnd = strpos($_SERVER['REQUEST_URI'], "?");
 if ($keyEnd === false) {
     $keyEnd = strlen($_SERVER['REQUEST_URI']);
 }
-$urlKey = substr($_SERVER['REQUEST_URI'], 3, $keyEnd - 3);
+$urlKey = substr($_SERVER['REQUEST_URI'], 3, $keyEnd - 3); echo($_SERVER['REQUEST_URI');echo($urlKey);
 
 $postInfo = retrieve_post($urlKey);
 

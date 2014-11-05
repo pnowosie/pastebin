@@ -62,13 +62,12 @@ function commit_post($text, $jsCrypt, $lifetime_seconds, $short = false)
 
 function retrieve_post($urlKey)
 {
-    $id = mysql_real_escape_string(get_database_id($urlKey));
-
-    $query = mysql_query("SELECT * FROM `pastes` WHERE token='$id'");
-    if(mysql_num_rows($query) > 0)
+	global $db;
+	$query = $db->prepare("SELECT * FROM `pastes` WHERE token=?");
+    $query->execute(array(get_database_id($urlKey)));
+	$cols = $query->fetch(PDO::FETCH_ASSOC);
+    if($cols)
     {
-        $cols = mysql_fetch_array($query);
-
         $postInfo = array();
         $postInfo['timeleft'] = $cols['time'] - time();
         $postInfo['jscrypt'] = $cols['jscrypt'] == "1";
@@ -96,7 +95,6 @@ function retrieve_post($urlKey)
 function delete_expired_posts()
 {
 	global $db;
-	dump($db, '$db');//REM!
     $now = time();
     $db->exec("DELETE FROM pastes WHERE time <= '$now'");
 }
@@ -113,7 +111,7 @@ function get_encryption_key($urlKey)
 
 function SafeEncode($data)
 {
-	return mysql_real_escape_string(base64_encode($data));
+	return base64_encode($data);
 }
 
 function SafeDecode($data)
