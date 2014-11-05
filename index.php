@@ -19,7 +19,7 @@
 
 	<div style="text-align:center; font-size: 20px;"><b><u>P</u></b>re-<b><u>I</u></b>nternet <b><u>E</u></b>ncryption for Text</div>
 
-	<form id="pasteform" name="pasteform" action="/bin/add.php" method="post">
+	<form id="pasteform" name="pasteform" action="/src/add.php" method="post">
 		<input id="jscrypt" type="hidden" name="jscrypt" value="no" />
 		<br />
 		<textarea id="paste" style="color:black; background-color:white; border:dashed 1px black; width:100%;" rows="30" cols="40" name="paste" spellcheck="false"></textarea>

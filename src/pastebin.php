@@ -9,17 +9,25 @@
 require_once('PasswordGenerator.php');
 
 // Database connection
-require_once('/etc/creds.php');
-$creds = Creds::getCredentials("pastebin");
-mysql_connect($creds[C_HOST],$creds[C_USER],$creds[C_PASS]);
-@mysql_select_db($creds[C_DATB]) or die( "Unable to select database");
-unset($creds);
+require_once('../config.php');
+try {
+	$db = new PDO($config['db/connStr'], $config['db/user'], $config['db/pass'],
+	  array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
+	);
+} catch(PDOException $ex) {
+    die(json_encode(array('success' => false, 'message' => 'Unable to connect')));
+}
+//mysql_connect($config['db/host'], $config['db/user'], $config['db/pass']);
+//@mysql_select_db($config['db/user']) or die( "Unable to select database");
+unset($config);
 
 // Constants
 define("IV_BYTES", 16);
 
 function commit_post($text, $jsCrypt, $lifetime_seconds, $short = false)
 {
+	global $db;
+	dump($db, '$db');
     do {
         $urlKey = PasswordGenerator::getAlphaNumericPassword($short ? 8 : 22);
     } while( retrieve_post( $urlKey ) !== false );
@@ -43,10 +51,11 @@ function commit_post($text, $jsCrypt, $lifetime_seconds, $short = false)
     $jsCrypted = $jsCrypt ? 1 : 0;
     $time = (int)(time() + $lifetime_seconds);
 
-    mysql_query(
+    $stmt = $db->prepare(
         "INSERT INTO pastes (token, data, time, jscrypt) 
-        VALUES('$id', '$encrypted', '$time', '$jsCrypted')"
+         VALUES (:id, :encrypted, :time, :jsCrypted)"
     );
+	$stmt->execute(array(':id' => $id, ':encrypted' => $encrypted, ':time' => $time, ':jsCrypted' => $jsCrypted));
 
     return $urlKey;
 }
@@ -86,8 +95,10 @@ function retrieve_post($urlKey)
 
 function delete_expired_posts()
 {
+	global $db;
+	dump($db, '$db');//REM!
     $now = time();
-    mysql_query("DELETE FROM pastes WHERE time <= '$now'");
+    $db->exec("DELETE FROM pastes WHERE time <= '$now'");
 }
 
 function get_database_id($urlKey)

@@ -6,7 +6,7 @@
  * This code is in the public domain. There is no warranty.
  */
 
-require_once('pastebin.php');
+require_once('src/pastebin.php');
 
 // Never show a post over an insecure connection
 if($_SERVER["HTTPS"] != "on") {
