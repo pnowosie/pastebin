@@ -152,9 +152,9 @@ header('Content-Type: text/html; charset=utf-8');
 </head>
 <body>
 <!-- Scripts required for client-side decryption -->
-<script type="text/javascript" src="/js/sjcl.js"></script>
+<script type="text/javascript" src="/vendor/sjcl/sjcl.js"></script>
 <script type="text/javascript" src="/js/encrypt.js"></script>
-<script type="text/javascript" src="/js/defuse.js"></script>
+<!--<script type="text/javascript" src="/js/defuse.js"></script>-->
 
 <script type="text/javascript">
 <!--
