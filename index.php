@@ -7,7 +7,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<script type="text/javascript" src="/vendor/jquery/dist/jquery.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/dist/css/bootstrap.min.css" />
-	<link rel="stylesheet" media="all" type="text/css" href="/main.css" />
+	<link rel="stylesheet" media="all" type="text/css" href="/css/main.css" />
 	<!--[if !IE 7]>
 		<style type="text/css">
 			#wrap {display:table;height:100%}
@@ -25,15 +25,20 @@
 		<textarea id="paste" style="color:black; background-color:white; border:dashed 1px black; width:100%;" rows="30" cols="40" name="paste" spellcheck="false"></textarea>
 		<br />
 		<p><b>All posts are automatically deleted after 10 days.</b></p>
-		<input style="width:300px;" type="submit" name="submitpaste" value="Post Without Password Encryption" /> 	<input type="checkbox" name="shorturl" value="yes" /> Use shorter URL.
+		<input style="width:300px;" type="submit" name="submitpaste" value="Post Without Password Encryption" />
+		<input type="checkbox" name="shorturl" value="yes" /> Use shorter URL.
+		<input type="checkbox" name="burnread" value="yes" /> Burn after reading.
 		 Expire in
 		 <select name="lifetime">
+			 <option value="31104000">1 Year</option>
 			 <option value="15552000">6 Months</option>
-			 <option value="2592000">30 Days</option>
-			 <option value="864000" selected="selected">10 Days</option>
-			 <option value="86400">1 Day</option>
-			 <option value="3600">60 Minutes</option>
+			 <option value="2592000">1 Month</option>
+			 <option value="864000">10 Days</option>
+			 <option value="86400" selected="selected">1 Day</option>
+			 <option value="3600">1 Hour</option>
+			 <option value="1800">30 Minutes</option>
 			 <option value="600">10 Minutes</option>
+			 <option value="180">3 Minutes</option>
 		 </select>
 	</form>
 
