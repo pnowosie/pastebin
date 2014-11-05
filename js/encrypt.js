@@ -83,3 +83,30 @@ encrypt.unpack_ciphertext = function(packed_ciphertext) {
     unpacked.ct_bits = sjcl.codec.hex.toBits(split[3]);
     return unpacked;
 };
+
+encrypt.allhtmlsani = function(text) {
+	var sani = [];
+	var i = 0;
+	for(i = 0; i < text.length; i++)
+	{
+		var curChar = text.charCodeAt(i);
+		//Sanitize curChar if it isn't a CR, LF, TAB, or SPACE
+		if(curChar != 10 && curChar != 13 && curChar != 9 && curChar != 32)
+		{
+			sani.push("&#" + curChar + ";"); 
+		}
+		else
+		{
+			sani.push(String.fromCharCode(curChar));
+		}
+	}
+	text = sani.join('');
+
+	//Now deal with spaces, tabs, and newlines
+	text = text.replace(/\r\n/g, "\n");
+	text = text.replace(/\r/g, "\n");
+	text = text.replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;");
+	text = text.replace(/\s\s/g, "&nbsp;&nbsp;");
+	text = text.replace(/\n/g, "<br />");
+	return text;
+};

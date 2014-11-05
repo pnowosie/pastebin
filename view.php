@@ -17,17 +17,15 @@ require_once('src/pastebin.php');
 
 delete_expired_posts();
 
-/*if (strpos($_SERVER['HTTP_HOST'], "bin.defuse.ca") !== false) {
-    $urlKey = substr($_SERVER['REQUEST_URI'], 1);
-    header("Location: https://defuse.ca/b/{$urlKey}");
+/*
+ * Instead of rewrite rules, just handle post retrieval here
+ * /view.php?key=postkey
+ */
+if (!isset($_GET['key'])) {
+    echo "Error: Sorry, the paste you were looking for could not be found.";
     die();
-}*/
-
-$keyEnd = strpos($_SERVER['REQUEST_URI'], "?");
-if ($keyEnd === false) {
-    $keyEnd = strlen($_SERVER['REQUEST_URI']);
 }
-$urlKey = substr($_SERVER['REQUEST_URI'], 3, $keyEnd - 3); echo($_SERVER['REQUEST_URI');echo($urlKey);
+$urlKey = $_GET['key'];
 
 $postInfo = retrieve_post($urlKey);
 
@@ -299,7 +297,7 @@ function decryptPaste(){
 			var bgColor = i % 2;
 			var line = lines[i].replace("\n", "");
 			line = line.replace("\r", "");
-			fancyLines.push("<li><div class=\"div" + bgColor + "\">&nbsp;" + fxw.allhtmlsani(line) + "</div></li>");
+			fancyLines.push("<li><div class=\"div" + bgColor + "\">&nbsp;" + encrypt.allhtmlsani(line) + "</div></li>");
 		}
 		fancyLines.push("</ol>");
 

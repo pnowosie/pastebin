@@ -9,7 +9,7 @@
 require_once('PasswordGenerator.php');
 
 // Database connection
-require_once('../config.php');
+require_once('config.php');
 try {
 	$db = new PDO($config['db/connStr'], $config['db/user'], $config['db/pass'],
 	  array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
