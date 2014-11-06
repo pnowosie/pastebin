@@ -18,4 +18,4 @@ Planed features:
 ----------------
 - Delete link to remove pastes before expiration
 - Pretty up the UI hasn't really been touched
-- What something cool, just let me know?
+- Want something cool, just let me know?
