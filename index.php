@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<html>
 <head>
 	<title>Encrypted Pastebin - Keep your data private and secure! - Defuse Security</title>
 	<meta name="description" content="An Encrypted, Anonymous, Secure, and PRIVATE Pastebin. Send large amounts of text to your friends without it being leaked onto the internet!" />

@@ -45,10 +45,12 @@ header("Expires: Mon, 01 Jan 1990 00:00:00 GMT");
 
 header('Content-Type: text/html; charset=utf-8');
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<!DOCTYPE html>
+<html>
 <head>
     <title>Defuse Security's Encrypted Pastebin</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/dist/css/bootstrap.min.css" />
     <style type="text/css">
     body {
         background-color: #e7e7e7; 
@@ -194,7 +196,10 @@ if($postInfo !== false)
     $hours = (int)($timeleft / (3600)) % 24;
     $minutes = (int)($timeleft / 60) % 60;
     echo "<div id=\"timeleft\">This post will be deleted in $days days, $hours hours, and $minutes minutes.</div>";
-
+	if ($postInfo['burnread']) {
+	  echo '<div id="timeleft"><span class="label label-warning">Warning</span> Don\'t close this window, this message can\'t be displayed again.</div>';
+	}
+	
 	if($postInfo['jscrypt'] == false) 
 	{
         // If the post wasn't encrypted in JavaScript, we can display it right away

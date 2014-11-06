@@ -26,7 +26,7 @@ define("IV_BYTES", 16);
 define("SHORT_KEY_LEN", 12);
 define("LONG_KEY_LEN", 32);
 
-function commit_post($text, $jsCrypt, $lifetime_seconds, $short = false)
+function commit_post($text, $jsCrypt, $burnread, $lifetime_seconds, $short = false)
 {
 	global $db;
     do {
@@ -40,10 +40,15 @@ function commit_post($text, $jsCrypt, $lifetime_seconds, $short = false)
     $time = (int)(time() + $lifetime_seconds);
 
     $stmt = $db->prepare(
-        "INSERT INTO pastes (token, data, time, jscrypt) 
-         VALUES (:id, :encrypted, :time, :jsCrypted)"
+        "INSERT INTO pastes (token, data, time, jscrypt, burnread) 
+         VALUES (:id, :encrypted, :time, :jsCrypted, :burnread)"
     );
-	$stmt->execute(array(':id' => $id, ':encrypted' => $encrypted, ':time' => $time, ':jsCrypted' => $jsCrypted));
+	$stmt->execute(array(':id' => $id, 
+		':encrypted' => $encrypted, 
+		':time' => $time, 
+		':jsCrypted' => $jsCrypted,
+		':burnread' => $burnread
+	));
 
     return $urlKey;
 }
@@ -58,8 +63,18 @@ function retrieve_post($urlKey)
     {
         $postInfo = array();
         $postInfo['timeleft'] = $cols['time'] - time();
-        $postInfo['jscrypt'] = $cols['jscrypt'] == "1";
+        $postInfo['jscrypt']  = $cols['jscrypt']  == "1";
+        $postInfo['burnread'] = $cols['burnread'] == "1";
         $postInfo['text'] = Decrypt($cols['data'], $urlKey);
+		
+		if ($postInfo['burnread']) {
+			// don't burn just after being sent, if displayed within 5 seconds
+			if (time() - strtotime($cols['inserted']) > 5) {
+				$cmd = $db->prepare('DELETE FROM `pastes` WHERE token=?');
+				$cmd->execute(array(get_database_id($urlKey)));
+			}
+		}
+		
         return $postInfo;
     }
     else
