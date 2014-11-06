@@ -23,29 +23,18 @@ unset($config);
 
 // Constants
 define("IV_BYTES", 16);
+define("SHORT_KEY_LEN", 12);
+define("LONG_KEY_LEN", 32);
 
 function commit_post($text, $jsCrypt, $lifetime_seconds, $short = false)
 {
 	global $db;
     do {
-        $urlKey = PasswordGenerator::getAlphaNumericPassword($short ? 8 : 22);
+        $urlKey = PasswordGenerator::getAlphaNumericPassword($short ? SHORT_KEY_LEN : LONG_KEY_LEN);
     } while( retrieve_post( $urlKey ) !== false );
 
     $id = get_database_id($urlKey);
-    $encryptionKey = get_encryption_key($urlKey);
-
-    $iv = mcrypt_create_iv(IV_BYTES, MCRYPT_DEV_URANDOM);
-
-    $encrypted = SafeEncode(
-        $iv .
-        mcrypt_encrypt(
-            MCRYPT_RIJNDAEL_128,
-            $encryptionKey,
-            $text,
-            MCRYPT_MODE_CBC,
-            $iv
-        )
-    );
+    $encrypted = Encrypt($text, $urlKey);
 
     $jsCrypted = $jsCrypt ? 1 : 0;
     $time = (int)(time() + $lifetime_seconds);
@@ -70,21 +59,7 @@ function retrieve_post($urlKey)
         $postInfo = array();
         $postInfo['timeleft'] = $cols['time'] - time();
         $postInfo['jscrypt'] = $cols['jscrypt'] == "1";
-
-        $encryptionKey = get_encryption_key($urlKey);
-        $ciphertext = SafeDecode($cols['data']);
-        $iv = substr($ciphertext, 0, IV_BYTES);
-        $encryptedText = substr($ciphertext, IV_BYTES);
-        $postInfo['text'] = 
-            str_replace("\0", "",
-                mcrypt_decrypt(
-                    MCRYPT_RIJNDAEL_128,
-                    $encryptionKey,
-                    $encryptedText, 
-                    MCRYPT_MODE_CBC,
-                    $iv
-                )
-            );
+        $postInfo['text'] = Decrypt($cols['data'], $urlKey);
         return $postInfo;
     }
     else
@@ -108,14 +83,34 @@ function get_encryption_key($urlKey)
     return hash_hmac("SHA256", "encryption_key", $urlKey, true);
 }
 
-function SafeEncode($data)
+function Encrypt($data, $keymaterial)
 {
-	return base64_encode($data);
+	$iv = mcrypt_create_iv(IV_BYTES, MCRYPT_DEV_URANDOM);
+
+    $encrypted = $iv . mcrypt_encrypt(
+		MCRYPT_RIJNDAEL_128,
+		get_encryption_key($keymaterial),
+		$data,
+		MCRYPT_MODE_CBC,
+		$iv
+    );
+	//@see: Understanding PHP AES Encryption http://www.chilkatsoft.com/p/php_aes.asp
+	return base64_encode($encrypted);
 }
 
-function SafeDecode($data)
+function Decrypt($encData, $keymaterial)
 {
-	return base64_decode($data);
+	$ciphertext = base64_decode($encData);
+	$iv = substr($ciphertext, 0, IV_BYTES);
+	$encryptedText = substr($ciphertext, IV_BYTES);
+	$data = mcrypt_decrypt(
+		MCRYPT_RIJNDAEL_128,
+		get_encryption_key($keymaterial),
+		$encryptedText, 
+		MCRYPT_MODE_CBC,
+		$iv
+	);
+	return str_replace("\0", "", $data);
 }
 
 function smartslashes($data)
