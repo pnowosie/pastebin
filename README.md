@@ -1,14 +1,21 @@
-Defuse.ca's Pastebin
-====================
+Modified Defuse.ca's Pastebin
+=============================
 
-This code is ripped out of defuse.ca's pastebin. It does not work on its own
-but with some modification you should be able to get it to work:
 
-- Replace "defuse.ca" hard-coded strings with your own domain.
-- Make sure all the paths are correct.
-- Set up the apache redirection rules.
-- pastebin.html is supposed to be a PHP file with the homepage (this was
-  ripped out of my CMS so it's missing the HTML &lt;head&gt; and stuff.
-- Lots of other stuff I'm probably forgetting.
+- Restored original code from defuse.ca (https://github.com/defuse/pastebin)
+- Recreated MySQL DB, see database.sql script
+- Restructure project, move some files, added bower for client dependencies, easy installation
+- Works without url rewriting (redirects to view.php?key={urlkey}), maybe I will change it later
 
-Good luck!
+Improvements over the original project
+--------------------------------------
+- Changed data access library to PDO
+- Added 'burn after reading' feature
+- Client encryption uses AES-256 not AES-128
+
+
+Planed features:
+----------------
+- Delete link to remove pastes before expiration
+- Pretty up the UI hasn't really been touched
+- What something cool, just let me know?
