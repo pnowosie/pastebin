@@ -32,7 +32,7 @@ encrypt.encrypt = function(password, plaintext) {
     var iv_bits = sjcl.random.randomWords(4);
 
     /* Generate the key from the password and salt with PBKDF2 */
-    var key = sjcl.misc.pbkdf2(password, salt_bits, 1000, 128);
+    var key = sjcl.misc.pbkdf2(password, salt_bits, 1000, 256);
 
     /* Encrypt the plaintext */
     var aes = new sjcl.cipher.aes(key);
@@ -52,7 +52,7 @@ encrypt.decrypt = function(password, ciphertext) {
     var unpacked = encrypt.unpack_ciphertext(ciphertext);
 
     /* Generate the key from the password and salt with PBKDF2 */
-    var key = sjcl.misc.pbkdf2(password, unpacked.salt_bits, unpacked.iterations, 128);
+    var key = sjcl.misc.pbkdf2(password, unpacked.salt_bits, unpacked.iterations, 256);
 
     /* Decrypt the ciphertext */
     var aes = new sjcl.cipher.aes(key);
