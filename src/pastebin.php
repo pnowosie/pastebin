@@ -70,8 +70,7 @@ function retrieve_post($urlKey)
 		if ($postInfo['burnread']) {
 			// don't burn just after being sent, if displayed within 5 seconds
 			if (time() - strtotime($cols['inserted']) > 5) {
-				$cmd = $db->prepare('DELETE FROM `pastes` WHERE token=?');
-				$cmd->execute(array(get_database_id($urlKey)));
+				delete_by_key($urlKey);
 			}
 		}
 		
@@ -79,6 +78,14 @@ function retrieve_post($urlKey)
     }
     else
         return false;
+}
+
+function delete_by_key($urlKey)
+{
+	global $db;
+	$cmd = $db->prepare('DELETE FROM `pastes` WHERE token=?');
+	$result = $cmd->execute(array(get_database_id($urlKey)));
+	return $result;
 }
 
 function delete_expired_posts()
@@ -96,6 +103,11 @@ function get_database_id($urlKey)
 function get_encryption_key($urlKey)
 {
     return hash_hmac("SHA256", "encryption_key", $urlKey, true);
+}
+
+function get_deletion_token($urlKey)
+{
+	return hash_hmac("SHA256", "deletion_token", $urlKey, false);
 }
 
 function Encrypt($data, $keymaterial)
@@ -126,6 +138,18 @@ function Decrypt($encData, $keymaterial)
 		$iv
 	);
 	return str_replace("\0", "", $data);
+}
+
+// Constant time string comparison.
+// (Used to deter time attacks on hmac checking. See section 2.7 of https://defuse.ca/audits/zerobin.htm)
+function slow_equals($a, $b)
+{
+    $diff = strlen($a) ^ strlen($b);
+    for($i = 0; $i < strlen($a) && $i < strlen($b); $i++)
+    {
+        $diff |= ord($a[$i]) ^ ord($b[$i]);
+    }
+    return $diff === 0;
 }
 
 function smartslashes($data)
