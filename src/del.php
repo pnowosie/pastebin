@@ -19,12 +19,8 @@ if(isset($_GET['key']) && isset($_GET['token']))
 	}
 } 
 
-header('Content-type: application/json');
-if ($deleted) {
-	echo json_encode(array('success' => true));
-	exit;
-}
-
-die(json_encode(array('success' => false, 'message' => 'The paste you were looking for could not be found.')));
+//redirect user to the view page, regardless urlKey was valid
+$http_host = $_SERVER['HTTP_HOST'];
+header("Location: http://{$http_host}/view.php?key={$urlKey}");
 
 ?>
