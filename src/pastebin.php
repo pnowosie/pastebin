@@ -67,11 +67,14 @@ function retrieve_post($urlKey)
         $postInfo['burnread'] = $cols['burnread'] == "1";
         $postInfo['text'] = Decrypt($cols['data'], $urlKey);
 		
-		if ($postInfo['burnread']) {
-			// don't burn just after being sent, if displayed within 5 seconds
-			if (time() - strtotime($cols['inserted']) > 5) {
-				delete_by_key($urlKey);
-			}
+		// paste has been added within n seconds
+		$recetlyAdded = time() - strtotime($cols['inserted']) < 3;
+		
+		if ($recetlyAdded) {
+			$postInfo['deleteToken'] = get_deletion_token($urlKey);
+		} 
+		elseif ($postInfo['burnread']) {
+			delete_by_key($urlKey);
 		}
 		
         return $postInfo;

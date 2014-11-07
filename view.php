@@ -229,10 +229,13 @@ if($postInfo !== false)
 	}
 
 	?>
+	<?php if(isset($postInfo['deleteToken'])) : ?>
 	<div>
 	  <span class="label label-info">Info</span>
-	  To delete this paste use <a href="/src/del.php?key=<?php echo $urlKey; ?>&token=<?php echo get_deletion_token($urlKey); ?>">this link</a>.
+	  To delete this paste use <a href="/src/del.php?key=<?php echo $urlKey; ?>&token=<?php echo $postInfo['deleteToken']; ?>">this link</a>.
 	</div>
+	<?php endif; ?>
+	
 	<form name="pasteform" id="pasteform" action="/bin/add.php" method="post">
 
 	<textarea id="paste" name="paste" spellcheck="false" rows="30" cols="80"><?
