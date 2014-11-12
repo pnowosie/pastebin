@@ -238,10 +238,12 @@ if($postInfo !== false)
 	
 	<form name="pasteform" id="pasteform" action="/bin/add.php" method="post">
 
-	<textarea id="paste" name="paste" spellcheck="false" rows="30" cols="80"><?
+	<textarea id="paste" name="paste" spellcheck="false" rows="30" cols="80">
+    <?php
         if(!$postInfo['jscrypt'])
-			echo htmlentities($postInfo['text'], ENT_QUOTES);
-	?></textarea>
+			    echo htmlentities($postInfo['text'], ENT_QUOTES);
+	  ?>
+  </textarea>
 
 	<input id="jscrypt" type="hidden" name="jscrypt" value="no" />
 	<input style="width:300px;" type="submit" name="submitpaste" value="Post Without Password Encryption" />
@@ -266,7 +268,7 @@ if($postInfo !== false)
 			<b>[ Please Enable JavaScript ]</b>
 		</noscript>
 	</div>
-	<?
+	<?php
 }
 else // $postInfo === false, the post does not exist.
 {
@@ -284,7 +286,7 @@ function PrintPasswordPrompt()
 			<b>[ Please Enable JavaScript ]</b>
         </noscript>
     </div>
-<?
+<?php
 }
 
 function PrintDecryptor($data)
@@ -326,7 +328,7 @@ function decryptPaste(){
     }
 }
 </script>
-<?
+<?php
 }
 ?>
 <p style="padding: 20px;">
