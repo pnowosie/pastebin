@@ -29,7 +29,7 @@ if(isset($_POST['paste']))
 
 	//redirect user to the view page
     $http_host = $_SERVER['HTTP_HOST'];
-	header("Location: http://{$http_host}/view.php?key={$urlKey}");
+	header("Location: http://{$http_host}/view.php?_={$urlKey}");
 
 }
 else

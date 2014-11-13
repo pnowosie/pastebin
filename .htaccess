@@ -1,4 +1,0 @@
-RewriteEngine on
-
-RewriteCond %{DOCUMENT_ROOT} !-f
-RewriteRule b/* view.php [QSA,L]
