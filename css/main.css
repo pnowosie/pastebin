@@ -44,9 +44,6 @@ textarea {
 
 #header {
   margin: 0;
-  padding: 10px;
-  font-size: 15pt;
-  float: left;
 }
 
 #header a {
@@ -54,12 +51,9 @@ textarea {
   text-decoration: none;
 }
 
-#header a:visited {
-  color: black;
-}
-
 #header a:hover {
-  text-decoration: underline;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 #timeleft {

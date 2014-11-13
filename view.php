@@ -5,7 +5,7 @@
  * Developer contact: havoc AT defuse.ca
  * This code is in the public domain. There is no warranty.
  */
-
+date_default_timezone_set("Zulu");
 require_once('src/pastebin.php');
 
 // Never show a post over an insecure connection
@@ -48,46 +48,17 @@ header('Content-Type: text/html; charset=utf-8');
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Defuse Security's Encrypted Pastebin</title>
+  <title>ZeroBin minimalist zero-knowledge pastebin</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="/css/main.css" />
 </head>
 <body>
-<!-- Scripts required for client-side decryption -->
-<script type="text/javascript" src="/vendor/sjcl/sjcl.js"></script>
-<script type="text/javascript" src="/js/encrypt.js"></script>
-<!--<script type="text/javascript" src="/js/defuse.js"></script>-->
-
-<script type="text/javascript">
-<!--
-function encryptPaste()
-{
-	var pass1 = document.getElementById("pass1").value;
-	var pass2 = document.getElementById("pass2").value;
-	if(pass1 == pass2 && pass1 != "")
-	{
-		var plain = document.getElementById("paste").value;
-		var ct = encrypt.encrypt(pass1, plain);
-		document.getElementById("paste").value = ct;
-		document.getElementById("jscrypt").value = "yes";
-		document.pasteform.submit();
-	}
-	else if(pass1 != pass2)
-	{
-		alert("Passwords do not match.");
-	}
-	else if(pass1 == "")
-	{
-		alert("You must provide a password.");
-	}
-}
--->
-</script>
-<!-- End of scripts for client-side decryption -->
-
-<h1 id="header"><a href="https://defuse.ca/pastebin.htm">Defuse Security</a>'s Pastebin</h1>
-
+<div class="container">
+  <div class="center-block">
+    <h1><a href="/view.php">ZeroBin</a></h1>
+    <div class="lead">minimalist opensource zero-knowledge pastebin</div>
+  </div>
 <?php
 
 
@@ -235,10 +206,41 @@ function decryptPaste(){
 }
 ?>
 <p style="padding: 20px;">
-<strong>Important Note:</strong> This page contains user-submitted content. In
-no way is Defuse Security responsible for its contents. If this page contains
-illegal information please <a href="https://defuse.ca/contact.htm">report it to
-us</a>.
+<strong>Important Note:</strong> 
+This page contains user-submitted content. In no way site administrator is responsible for its contents.<br/>
+This is a test service: Data may be deleted anytime. Kittens will die if you abuse this service.
 </p>
+</div>
+<!-- Scripts required for client-side decryption -->
+<script type="text/javascript" src="/vendor/sjcl/sjcl.js"></script>
+<script type="text/javascript" src="/js/encrypt.js"></script>
+
+<script type="text/javascript">
+<!--
+function encryptPaste()
+{
+	var pass1 = document.getElementById("pass1").value;
+	var pass2 = document.getElementById("pass2").value;
+	if(pass1 == pass2 && pass1 != "")
+	{
+		var plain = document.getElementById("paste").value;
+		var ct = encrypt.encrypt(pass1, plain);
+		document.getElementById("paste").value = ct;
+		document.getElementById("jscrypt").value = "yes";
+		document.pasteform.submit();
+	}
+	else if(pass1 != pass2)
+	{
+		alert("Passwords do not match.");
+	}
+	else if(pass1 == "")
+	{
+		alert("You must provide a password.");
+	}
+}
+-->
+</script>
+<!-- End of scripts for client-side decryption -->
+
 </body>
 </html>
