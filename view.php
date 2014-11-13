@@ -133,7 +133,7 @@ header('Content-Type: text/html; charset=utf-8');
   <script type="text/javascript">
   function decryptPaste(){
       try {
-          var encrypted = "<? echo js_string_escape($data); ?>";
+          var encrypted = "<?php echo js_string_escape($data); ?>";
           var password = document.getElementById("password").value;
           var plaintext = encrypt.decrypt(password, encrypted);
       document.getElementById("passwordprompt").innerHTML = "";
@@ -219,27 +219,40 @@ This is a test service: Data may be deleted anytime. Kittens will die if you abu
 
 <script type="text/javascript">
 <!--
-function encryptPaste()
-{
-	var pass1 = document.getElementById("pass1").value;
-	var pass2 = document.getElementById("pass2").value;
-	if(pass1 == pass2 && pass1 != "")
-	{
-		var plain = document.getElementById("paste").value;
-		var ct = encrypt.encrypt(pass1, plain);
-		document.getElementById("paste").value = ct;
-		document.getElementById("jscrypt").value = "yes";
-		document.pasteform.submit();
+
+	/* Use server-side code to fill this with a random 256 bit hex string. */
+	var entropy = "<?php echo bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM)); ?>";
+	sjcl.random.addEntropy(entropy, entropy.length * 4, "server");
+
+	/* Collect entropy from mouse movements and key-presses */
+	try {
+		sjcl.random.startCollectors();
+	} catch (e) {
+		/* Ignore it -- server entropy is good enough. */
 	}
-	else if(pass1 != pass2)
+
+	function encryptPaste()
 	{
-		alert("Passwords do not match.");
+		var pass1 = document.getElementById("pass1").value;
+		var pass2 = document.getElementById("pass2").value;
+		if(pass1 == pass2 && pass1 != "")
+		{
+			var plain = document.getElementById("paste").value;
+			var ct = encrypt.encrypt(pass1, plain);
+			document.getElementById("paste").value = ct;
+			document.getElementById("jscrypt").value = "yes";
+			document.pasteform.submit();
+		}
+		else if(pass1 != pass2)
+		{
+			alert("Passwords do not match.");
+		}
+		else if(pass1 == "")
+		{
+			alert("You must provide a password.");
+		}
 	}
-	else if(pass1 == "")
-	{
-		alert("You must provide a password.");
-	}
-}
+  
 -->
 </script>
 <!-- End of scripts for client-side decryption -->
