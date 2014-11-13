@@ -21,6 +21,6 @@ if(isset($_GET['key']) && isset($_GET['token']))
 
 //redirect user to the view page, regardless urlKey was valid
 $http_host = $_SERVER['HTTP_HOST'];
-header("Location: http://{$http_host}/view.php?_={$urlKey}");
+header("Location: http://{$http_host}?_={$urlKey}");
 
 ?>
