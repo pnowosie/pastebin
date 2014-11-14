@@ -68,7 +68,7 @@ function retrieve_post($urlKey)
         $postInfo['text'] = Decrypt($cols['data'], $urlKey);
 		
 		// paste has been added within n seconds
-		$recetlyAdded = time() - strtotime($cols['inserted']) < 3;
+		$recetlyAdded = time() - strtotime($cols['inserted']) < 30;
 		
 		if ($recetlyAdded) {
 			$postInfo['deleteToken'] = get_deletion_token($urlKey);

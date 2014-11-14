@@ -118,12 +118,13 @@ header('Content-Type: text/html; charset=utf-8');
   {
   ?>
     <div id="passwordprompt">
-          <b>Enter Password:</b> 
-          <input type="password" id="password" name="password" value="" /><input type="button" name="decrypt" value="Decrypt" onClick="decryptPaste();" />
-          <noscript>
+      <b>Enter Password:</b> 
+      <input type="password" id="password" name="password" value="" size="50" />
+      <input type="button" name="decrypt" value="Decrypt" onClick="decryptPaste();" />
+      <noscript>
         <b>[ Please Enable JavaScript ]</b>
-          </noscript>
-      </div>
+      </noscript>
+    </div>
   <?php
   }
 
@@ -135,6 +136,8 @@ header('Content-Type: text/html; charset=utf-8');
       try {
           var encrypted = "<?php echo js_string_escape($data); ?>";
           var password = document.getElementById("password").value;
+          if (password.length == 44 && password[43] == '=') // base64 key
+            key = sjcl.codec.base64.toBits(password);
           var plaintext = encrypt.decrypt(key || password, encrypted);
       document.getElementById("passwordprompt").innerHTML = "";
 
@@ -200,7 +203,10 @@ header('Content-Type: text/html; charset=utf-8');
 	<div id="encinfo">
 		<input type="password" id="pass1" value="" size="15" placeholder="Password" /> &nbsp;
 		<input type="password" id="pass2" value="" size="15" placeholder="Confirm" onkeyup="deriveKey()" /> &nbsp;
-    <input type="text" id="key" value="" size="50" />
+    <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" onclick="generateKey()">
+      <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+    </button>
+    <input type="text" id="key" value="" size="50" /> 
 		<input type="button" value="Encrypt &amp; Post" onclick="encryptPaste()" /> 
 		<noscript>
 			<b>[ Please Enable JavaScript ]</b>
@@ -249,6 +255,17 @@ This is a test service: Data may be deleted anytime. Kittens will die if you abu
 		}
 	}
   
+  function generateKey() {
+    var pass1 = document.getElementById("pass1");
+		var pass2 = document.getElementById("pass2");
+    var key = document.getElementById('key');
+    pass1.value = pass2.value = '';
+    encrypt.session_salt = [];
+    encrypt.derived_key = sjcl.random.randomWords(8);
+    key.value = sjcl.codec.base64.fromBits(encrypt.derived_key);
+    key.select();
+  }
+  
   function deriveKey() {
     var pass1 = document.getElementById("pass1");
 		var pass2 = document.getElementById("pass2");
@@ -262,7 +279,7 @@ This is a test service: Data may be deleted anytime. Kittens will die if you abu
     }
     
     if (pass1.value == pass2.value) {
-      var key = document.getElementById("key");
+      var key = document.getElementById('key');
       encrypt.session_salt = sjcl.random.randomWords(8);
       encrypt.derived_key = encrypt.derive_key(pass1.value, encrypt.session_salt, 1000);//encrypt.derived_key = ...?
       var derived = sjcl.codec.base64.fromBits(encrypt.derived_key);
