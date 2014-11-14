@@ -66,6 +66,7 @@ function retrieve_post($urlKey)
         $postInfo['jscrypt']  = $cols['jscrypt']  == "1";
         $postInfo['burnread'] = $cols['burnread'] == "1";
         $postInfo['text'] = Decrypt($cols['data'], $urlKey);
+        $postInfo['inserted'] = $cols['inserted'];
 		
 		// paste has been added within n seconds
 		$recetlyAdded = time() - strtotime($cols['inserted']) < 30;

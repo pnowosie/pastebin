@@ -64,15 +64,21 @@ header('Content-Type: text/html; charset=utf-8');
 
   if($postInfo !== false)
   {
+      $inserted = $postInfo['inserted'];
+      
+      
+    if ($postInfo['burnread']) {
+      echo '<div id="timeleft"><span class="label label-warning">Warning</span> Don\'t close this window, this message can\'t be displayed again.</div>';
+      $lifetime = "immediately after you refresh this window";
+    } else {
       // Display remaining lifetime
       $timeleft = $postInfo['timeleft'];
       $days = (int)($timeleft / (3600 * 24));
       $hours = (int)($timeleft / (3600)) % 24;
       $minutes = (int)($timeleft / 60) % 60;
-      echo "<div id=\"timeleft\">This post will be deleted in $days days, $hours hours, and $minutes minutes.</div>";
-    if ($postInfo['burnread']) {
-      echo '<div id="timeleft"><span class="label label-warning">Warning</span> Don\'t close this window, this message can\'t be displayed again.</div>';
+      $lifetime = "in $days days, $hours hours, and $minutes minutes";
     }
+    echo "<div id=\"timeleft\">This post was added at $inserted and will be deleted $lifetime.</div>";
 
     if($postInfo['jscrypt'] == false) 
     {
