@@ -49,7 +49,7 @@ header('Content-Type: text/html; charset=utf-8');
 	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="/css/main.css" />
 </head>
-<body>
+<body onload="init()">
 <div class="container">
   <div class="center-block">
     <h1><a href="/view.php">ZeroBin</a></h1>
@@ -131,11 +131,11 @@ header('Content-Type: text/html; charset=utf-8');
   {
   ?>
   <script type="text/javascript">
-  function decryptPaste(){
+  function decryptPaste(key){
       try {
           var encrypted = "<?php echo js_string_escape($data); ?>";
           var password = document.getElementById("password").value;
-          var plaintext = encrypt.decrypt(password, encrypted);
+          var plaintext = encrypt.decrypt(key || password, encrypted);
       document.getElementById("passwordprompt").innerHTML = "";
 
       document.getElementById("paste").value = plaintext;
@@ -198,9 +198,9 @@ header('Content-Type: text/html; charset=utf-8');
   </form>
 
 	<div id="encinfo">
-		Password: 
-		<input type="password" id="pass1" value="" size="8" /> &nbsp;
-		Verify: <input type="password" id="pass2" value="" size="8" /> 
+		<input type="password" id="pass1" value="" size="15" placeholder="Password" /> &nbsp;
+		<input type="password" id="pass2" value="" size="15" placeholder="Confirm" onkeyup="deriveKey()" /> &nbsp;
+    <input type="text" id="key" value="" size="50" />
 		<input type="button" value="Encrypt &amp; Post" onclick="encryptPaste()" /> 
 		<noscript>
 			<b>[ Please Enable JavaScript ]</b>
@@ -235,24 +235,61 @@ This is a test service: Data may be deleted anytime. Kittens will die if you abu
 	{
 		var pass1 = document.getElementById("pass1").value;
 		var pass2 = document.getElementById("pass2").value;
-		if(pass1 == pass2 && pass1 != "")
+		if(encrypt.derived_key != null)
 		{
 			var plain = document.getElementById("paste").value;
-			var ct = encrypt.encrypt(pass1, plain);
+			var ct = encrypt.encrypt(plain);
 			document.getElementById("paste").value = ct;
 			document.getElementById("jscrypt").value = "yes";
 			document.pasteform.submit();
 		}
-		else if(pass1 != pass2)
-		{
-			alert("Passwords do not match.");
-		}
-		else if(pass1 == "")
+		else
 		{
 			alert("You must provide a password.");
 		}
 	}
   
+  function deriveKey() {
+    var pass1 = document.getElementById("pass1");
+		var pass2 = document.getElementById("pass2");
+    
+    if (!pass1.value) {
+      pass1.focus();
+      setTimeout(function() {
+        pass2.value = '';
+      }, 1);
+      return;
+    }
+    
+    if (pass1.value == pass2.value) {
+      var key = document.getElementById("key");
+      encrypt.session_salt = sjcl.random.randomWords(8);
+      encrypt.derived_key = encrypt.derive_key(pass1.value, encrypt.session_salt, 1000);//encrypt.derived_key = ...?
+      var derived = sjcl.codec.base64.fromBits(encrypt.derived_key);
+      key.value = derived;
+      setTimeout(function() {
+        pass1.value = ''; pass2.value = '';
+        key.select();
+      }, 1);
+    } else if (pass1.value.length == pass2.value.length) {
+      alert("Password doesn't match.");
+      setTimeout(function() {
+        pass2.value = '';
+      }, 1);
+    }
+  }
+  
+  function init() {
+    var hashIndex = window.location.href.indexOf("#");
+    
+    if (hashIndex >= 0) {
+      var urlkey = window.location.href.substring(hashIndex + 1);
+      var key = sjcl.codec.base64.toBits(urlkey);
+      if (key.length == 8) {
+        decryptPaste(key);
+      }
+    }
+  }
 -->
 </script>
 <!-- End of scripts for client-side decryption -->

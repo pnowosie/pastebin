@@ -23,22 +23,22 @@ if (!encrypt) var encrypt = {};
  *   plaintext - The string to encrypt.
  * Returns: The encrypted string, encoded in base64.
  */
-encrypt.encrypt = function(password, plaintext) {
+encrypt.encrypt = function(plaintext) {
+    /*const*/var ITERCNT = 1000;
     /* Convert the plaintext string into a bitArray */
     var pt_bits = sjcl.codec.utf8String.toBits(plaintext);
 
-    /* Genrate a random salt and iv */
-    var salt_bits = sjcl.random.randomWords(8);
+    /* Genrate a random salt and iv */ 
     var iv_bits = sjcl.random.randomWords(4);
 
     /* Generate the key from the password and salt with PBKDF2 */
-    var key = sjcl.misc.pbkdf2(password, salt_bits, 1000, 256);
+    var key = encrypt.derived_key;
 
     /* Encrypt the plaintext */
     var aes = new sjcl.cipher.aes(key);
     var ct_bits = sjcl.mode.ocb2.encrypt(aes, pt_bits, iv_bits, [], 64);
 
-    return encrypt.pack_ciphertext(1000, salt_bits, iv_bits, ct_bits);
+    return encrypt.pack_ciphertext(ITERCNT, encrypt.session_salt, iv_bits, ct_bits);
 };
 
 /* Decrypts a string that was encrypted with encrypt.encrypt().
@@ -49,17 +49,25 @@ encrypt.encrypt = function(password, plaintext) {
  *   ciphertext - The string returned from encrypt.encrypt().
  */
 encrypt.decrypt = function(password, ciphertext) {
-    var unpacked = encrypt.unpack_ciphertext(ciphertext);
+    var key, unpacked = encrypt.unpack_ciphertext(ciphertext);
 
+    if (typeof password == 'string') {
     /* Generate the key from the password and salt with PBKDF2 */
-    var key = sjcl.misc.pbkdf2(password, unpacked.salt_bits, unpacked.iterations, 256);
-
+      key = encrypt.derive_key(password, unpacked.salt_bits, unpacked.iterations);
+    } else {
+      key = password;
+    }
+  
     /* Decrypt the ciphertext */
     var aes = new sjcl.cipher.aes(key);
     var pt_bits = sjcl.mode.ocb2.decrypt(aes, unpacked.ct_bits, unpacked.iv_bits, [], 64);
 
     /* Return the plaintext in string form */
     return sjcl.codec.utf8String.fromBits(pt_bits);
+};
+
+encrypt.derive_key = function(password, salt_bits, iterations) {
+  return sjcl.misc.pbkdf2(password, salt_bits, iterations, 256);
 };
 
 /* Used internally to pack the all the parameters into one string. */
