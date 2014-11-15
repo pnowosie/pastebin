@@ -25,6 +25,7 @@ unset($config);
 define("IV_BYTES", 16);
 define("SHORT_KEY_LEN", 12);
 define("LONG_KEY_LEN", 32);
+define("RET_DELAY", 15);
 
 function commit_post($text, $jsCrypt, $burnread, $lifetime_seconds, $short = false)
 {
@@ -40,14 +41,15 @@ function commit_post($text, $jsCrypt, $burnread, $lifetime_seconds, $short = fal
     $time = (int)(time() + $lifetime_seconds);
 
     $stmt = $db->prepare(
-        "INSERT INTO pastes (token, data, time, jscrypt, burnread) 
-         VALUES (:id, :encrypted, :time, :jsCrypted, :burnread)"
+        'INSERT INTO pastes (`token`, `data`, `time`, `jscrypt`, `burnread`, `ipaddress`) 
+         VALUES (:id, :encrypted, :time, :jsCrypted, :burnread, :ipaddress)'
     );
 	$stmt->execute(array(':id' => $id, 
 		':encrypted' => $encrypted, 
 		':time' => $time, 
 		':jsCrypted' => $jsCrypted,
-		':burnread' => $burnread
+		':burnread' => $burnread,
+    ':ipaddress' => get_client_ip()                 
 	));
 
     return $urlKey;
@@ -56,32 +58,72 @@ function commit_post($text, $jsCrypt, $burnread, $lifetime_seconds, $short = fal
 function retrieve_post($urlKey)
 {
 	global $db;
-	$query = $db->prepare("SELECT * FROM `pastes` WHERE token=?");
-    $query->execute(array(get_database_id($urlKey)));
+	$query = $db->prepare('SELECT * FROM `pastes` WHERE `token`=?');
+  $query->execute(array(get_database_id($urlKey)));
 	$cols = $query->fetch(PDO::FETCH_ASSOC);
-    if($cols)
-    {
-        $postInfo = array();
-        $postInfo['timeleft'] = $cols['time'] - time();
-        $postInfo['jscrypt']  = $cols['jscrypt']  == "1";
-        $postInfo['burnread'] = $cols['burnread'] == "1";
-        $postInfo['text'] = Decrypt($cols['data'], $urlKey);
-        $postInfo['inserted'] = $cols['inserted'];
-		
-		// paste has been added within n seconds
-		$recetlyAdded = time() - strtotime($cols['inserted']) < 30;
-		
-		if ($recetlyAdded) {
-			$postInfo['deleteToken'] = get_deletion_token($urlKey);
-		} 
-		elseif ($postInfo['burnread']) {
-			delete_by_key($urlKey);
-		}
-		
-        return $postInfo;
-    }
-    else
-        return false;
+  
+  $viewByAuthor = false;
+  $postInfo = array();
+  if($cols)
+  {
+    $postInfo['timeleft'] = $cols['time'] - time();
+    $postInfo['jscrypt']  = $cols['jscrypt']  == "1";
+    $postInfo['burnread'] = $cols['burnread'] == "1";
+    $postInfo['text'] = Decrypt($cols['data'], $urlKey);
+    $postInfo['inserted'] = $cols['inserted'];
+
+    // paste has been added within n seconds
+    $recetlyAdded = time() - strtotime($cols['inserted']) < 60;
+    $viewByAuthor = $cols['ipaddress'] == get_client_ip() && $recetlyAdded;
+
+    if ($viewByAuthor) {
+      $postInfo['deleteToken'] = get_deletion_token($urlKey);
+    } 
+  }
+  
+  if (!$viewByAuthor && traffic_limiter($urlKey))
+  {
+    return array('prevent_bruteforce' => true); 
+  }
+
+  if (!$viewByAuthor && $cols && $postInfo['burnread'])
+  {
+      delete_by_key($urlKey);
+  }
+  
+  return $cols !== false ? $postInfo : false;
+}
+
+// trafic_limiter : Make sure the IP address makes at most 1 request every RET_DELAY seconds.
+// Will return true if IP address made a call less than 10 seconds ago.
+function traffic_limiter($urlKey)
+{
+  global $db;
+  
+  $query = $db->prepare('SELECT `time` FROM `retrieves` WHERE `ipaddress`=? ORDER BY 1 DESC LIMIT 1');
+  $query->execute(array(get_client_ip()));
+  $last_ret = $query->fetchColumn();
+  
+  $logActivity = true; $abuse = false;
+  if($last_ret)
+  {
+    $abuse = time() - strtotime($last_ret) < RET_DELAY;
+    if ($abuse) $logActivity = false; // do not write each trial
+  }
+  
+  if ($logActivity)
+  {
+    $stmt = $db->prepare(
+      'INSERT INTO `retrieves` (`token`, `ipaddress`) 
+       VALUES (:token, :ipaddress)'
+    );
+    $stmt->execute(array(
+      ':token'     => get_database_id($urlKey),
+      ':ipaddress' => get_client_ip()
+    ));
+  }
+  
+  return $abuse;
 }
 
 function delete_by_key($urlKey)
@@ -181,6 +223,26 @@ function js_string_escape($data)
             $safe .= sprintf("\\x%02X", ord($data[$i]));
     }
     return $safe;
+}
+
+// Function to get the client IP address
+function get_client_ip() {
+    $ipaddress = '';
+    if (isset($_SERVER['HTTP_CLIENT_IP']))
+        $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+    else if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+        $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    else if (isset($_SERVER['HTTP_X_FORWARDED']))
+        $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+    else if (isset($_SERVER['HTTP_FORWARDED_FOR']))
+        $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+    else if (isset($_SERVER['HTTP_FORWARDED']))
+        $ipaddress = $_SERVER['HTTP_FORWARDED'];
+    else if (isset($_SERVER['REMOTE_ADDR']))
+        $ipaddress = $_SERVER['REMOTE_ADDR'];
+    else
+        $ipaddress = 'UNKNOWN';
+    return $ipaddress;
 }
 
 ?>

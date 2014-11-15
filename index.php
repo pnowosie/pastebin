@@ -8,13 +8,6 @@
 date_default_timezone_set("Zulu");
 require_once('src/pastebin.php');
 
-// Never show a post over an insecure connection
-/*if($_SERVER["HTTPS"] != "on") {
-   header("HTTP/1.1 301 Moved Permanently");
-   header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
-   die();
-}*/
-
 delete_expired_posts();
 
 /*
@@ -28,9 +21,16 @@ if (isset($_GET['_'])) {
 
   $postInfo = retrieve_post($urlKey);
 
-  if (isset($_GET['raw']) && $_GET['raw'] == "true") {
+  // prevent bruteforce key search
+  if (isset($postInfo['prevent_bruteforce']))
+  {
+    echo 'Too many frequent requests in a amount of time. Wait a little bit longer and try again.';
+    die();
+  }
+  
+  if (isset($_GET['raw'])) {
       header('Content-Type: text/plain');
-      echo $postInfo['text'];
+      echo (isset($postInfo['text']) ? $postInfo['text'] : "Not found $urlKey");
       die();
   }
 }
@@ -52,7 +52,7 @@ header('Content-Type: text/html; charset=utf-8');
 <body onload="init()">
 <div class="container">
   <div class="center-block">
-    <h1><a href="/view.php">ZeroBin</a></h1>
+    <h1><a href="/">ZeroBin</a></h1>
     <div class="lead">minimalist opensource zero-knowledge pastebin</div>
   </div>
 	
