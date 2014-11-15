@@ -1,5 +1,9 @@
-Modified Defuse.ca's Pastebin
-=============================
+Minimalist Open-Source Zero-Knowledge Pastebin
+==============================================
+Play with online demo [here](http://0bin.7gb.pl).
+
+Based on Defuse.ca's Pastebin
+-----------------------------
 
 - Restored original code from defuse.ca (https://github.com/defuse/pastebin)
 - Recreated MySQL DB, see database.sql script
