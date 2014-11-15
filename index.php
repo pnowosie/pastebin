@@ -5,7 +5,6 @@
  * Developer contact: havoc AT defuse.ca
  * This code is in the public domain. There is no warranty.
  */
-date_default_timezone_set("Zulu");
 require_once('src/pastebin.php');
 
 delete_expired_posts();

@@ -7,13 +7,17 @@
  */
 
 require_once('PasswordGenerator.php');
+require_once('config.php');
+
+date_default_timezone_set("Zulu");
 
 // Database connection
-require_once('config.php');
 try {
 	$db = new PDO($config['db/connStr'], $config['db/user'], $config['db/pass'],
 	  array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
 	);
+  // synchronize PHP and MySql timezone
+  $db->exec("SET @@session.time_zone='+00:00';");
 } catch(PDOException $ex) {
     die(json_encode(array('success' => false, 'message' => 'Unable to connect')));
 }
