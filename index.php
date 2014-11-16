@@ -317,6 +317,17 @@ This is a test service: Data may be deleted anytime. Kittens will die if you abu
 <!-- End of scripts for client-side decryption -->
 
 </body>
+  <!-- Start of StatCounter Code for Default Guide -->
+  <script type="text/javascript">
+    var sc_project=10137123; 
+    var sc_invisible=0; 
+    var sc_security="0fa4181f"; 
+    var scJsHost = (("https:" == document.location.protocol) ? "https://secure." : "http://www.");
+    document.write("<sc"+"ript type='text/javascript' src='" + scJsHost+ "statcounter.com/counter/counter.js'></"+"script>");
+  </script>
+  <noscript><div class="statcounter"><a title="website statistics" href="http://statcounter.com/" target="_blank"><img class="statcounter" src="http://c.statcounter.com/10137123/0/0fa4181f/0/" alt="website statistics"></a></div>
+  </noscript>
+  <!-- End of StatCounter Code for Default Guide -->
   <!-- GA code -->
   <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
