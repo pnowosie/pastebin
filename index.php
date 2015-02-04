@@ -180,12 +180,10 @@ header('Content-Type: text/html; charset=utf-8');
   
 	<form name="pasteform" id="pasteform" action="/src/add.php" method="post">
 
-	<textarea id="paste" name="paste" spellcheck="false" rows="30" cols="80">
-    <?php
-        if(isset($postInfo) && !$postInfo['jscrypt'])
-			    echo htmlentities($postInfo['text'], ENT_QUOTES);
-	  ?>
-  </textarea>
+	<textarea id="paste" name="paste" spellcheck="false" rows="30" cols="80"><?php
+          if(isset($postInfo) && !$postInfo['jscrypt'])
+		echo htmlentities($postInfo['text'], ENT_QUOTES);
+	  ?></textarea>
 
 	<input id="jscrypt" type="hidden" name="jscrypt" value="no" />
 	<input style="width:300px;" type="submit" name="submitpaste" value="Post Without Password Encryption" />
