@@ -193,7 +193,7 @@ header('Content-Type: text/html; charset=utf-8');
 			Post
 		  </button></p>
 		  <p><input id="jscrypt" type="hidden" name="jscrypt" value="no" /</p>
-		  <p><input type="checkbox" name="shorturl" value="yes" /> Use shorter URL.</p>
+		  <p><input type="checkbox" name="shorturl" value="yes" disabled="disabled" /> Use shorter URL.</p>
 		  <p><input type="checkbox" name="burnread" value="yes" /> Burn after reading.</p>
 		  <p>Expire in <select name="lifetime">
 				 <option value="31104000">1 Year</option>

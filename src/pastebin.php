@@ -6,7 +6,7 @@
  * This code is in the public domain. There is no warranty.
  */
 
-require_once('PasswordGenerator.php');
+require_once('Crypto.php');
 require_once('config.php');
 
 date_default_timezone_set("Zulu");
@@ -19,6 +19,7 @@ try {
   // synchronize PHP and MySql timezone
   $db->exec("SET @@session.time_zone='+00:00';");
 } catch(PDOException $ex) {
+    //var_dump($ex);
     die(json_encode(array('success' => false, 'message' => 'Unable to connect')));
 }
 //mysql_connect($config['db/host'], $config['db/user'], $config['db/pass']);
@@ -35,11 +36,11 @@ function commit_post($text, $jsCrypt, $burnread, $lifetime_seconds, $short = fal
 {
 	global $db;
     do {
-        $urlKey = PasswordGenerator::getAlphaNumericPassword($short ? SHORT_KEY_LEN : LONG_KEY_LEN);
+        $urlKey = get_encryption_key();
     } while( retrieve_post( $urlKey ) !== false );
 
     $id = get_database_id($urlKey);
-    $encrypted = Encrypt($text, $urlKey);
+    $encrypted = Encrypt($text, hex2bin($urlKey));
     $time = (int)(time() + $lifetime_seconds);
 
     $stmt = $db->prepare(
@@ -53,6 +54,7 @@ function commit_post($text, $jsCrypt, $burnread, $lifetime_seconds, $short = fal
 		':burnread'  => (int)$burnread,
     ':ipaddress' => get_client_ip()                 
 	);
+    //var_dump($insrt);
 	$stmt->execute($insrt);
 
     return $urlKey;
@@ -60,10 +62,10 @@ function commit_post($text, $jsCrypt, $burnread, $lifetime_seconds, $short = fal
 
 function retrieve_post($urlKey)
 {
-	global $db;
-	$query = $db->prepare('SELECT * FROM `pastes` WHERE `token`=?');
+  global $db;
+  $query = $db->prepare('SELECT * FROM `pastes` WHERE `token`=?');
   $query->execute(array(get_database_id($urlKey)));
-	$cols = $query->fetch(PDO::FETCH_ASSOC);
+  $cols = $query->fetch(PDO::FETCH_ASSOC);
   
   $viewByAuthor = false;
   $postInfo = array();
@@ -72,7 +74,7 @@ function retrieve_post($urlKey)
     $postInfo['timeleft'] = $cols['time'] - time();
     $postInfo['jscrypt']  = $cols['jscrypt']  == "1";
     $postInfo['burnread'] = $cols['burnread'] == "1";
-    $postInfo['text'] = Decrypt($cols['data'], $urlKey);
+    $postInfo['text'] = Decrypt($cols['data'], hex2bin($urlKey));
     $postInfo['inserted'] = $cols['inserted'];
 
     // paste has been added within n seconds
@@ -146,47 +148,50 @@ function delete_expired_posts()
 
 function get_database_id($urlKey)
 {
-    return hash_hmac("SHA256", "database_identity", $urlKey, false);
-}
-
-function get_encryption_key($urlKey)
-{
-    return hash_hmac("SHA256", "encryption_key", $urlKey, true);
+  return HKDF('sha256', $urlKey, 16, 'Zero_Knowledge_Paste_Bin|database_identity');
 }
 
 function get_deletion_token($urlKey)
 {
-	return hash_hmac("SHA256", "deletion_token", $urlKey, false);
+  return HKDF('sha256', $urlKey, 16, 'Zero_Knowledge_Paste_Bin|deletion_token');
 }
 
-function Encrypt($data, $keymaterial)
+function get_encryption_key()
 {
-	$iv = mcrypt_create_iv(IV_BYTES, MCRYPT_DEV_URANDOM);
-
-    $encrypted = $iv . mcrypt_encrypt(
-		MCRYPT_RIJNDAEL_128,
-		get_encryption_key($keymaterial),
-		$data,
-		MCRYPT_MODE_CBC,
-		$iv
-    );
-	//@see: Understanding PHP AES Encryption http://www.chilkatsoft.com/p/php_aes.asp
-	return base64_encode($encrypted);
+  try {
+    return bin2hex(Crypto::CreateNewRandomKey());
+  } catch (CryptoTestFailedException $ex) {
+    die('Cannot safely create a key');
+  } catch (CannotPerformOperationException $ex) {
+    die('Cannot safely create a key');
+  }
 }
 
-function Decrypt($encData, $keymaterial)
+function Encrypt($data, $key)
 {
-	$ciphertext = base64_decode($encData);
-	$iv = substr($ciphertext, 0, IV_BYTES);
-	$encryptedText = substr($ciphertext, IV_BYTES);
-	$data = mcrypt_decrypt(
-		MCRYPT_RIJNDAEL_128,
-		get_encryption_key($keymaterial),
-		$encryptedText, 
-		MCRYPT_MODE_CBC,
-		$iv
-	);
-	return str_replace("\0", "", $data);
+	try {
+    $ciphertext = Crypto::Encrypt($data, $key);
+  } catch (CryptoTestFailedException $ex) {
+    die('Cannot safely perform encryption');
+  } catch (CannotPerformOperationException $ex) {
+    die('Cannot safely perform decryption');
+  }
+	return base64_encode($ciphertext);
+}
+
+function Decrypt($ciphertext, $key)
+{
+  $data = base64_decode($ciphertext);
+	try {
+    $plaintext = Crypto::Decrypt($data, $key);
+  } catch (InvalidCiphertextException $ex) { // VERY IMPORTANT
+    die('DANGER! DANGER! The ciphertext has been tampered with!');
+  } catch (CryptoTestFailedException $ex) {
+    die('Cannot safely perform encryption');
+  } catch (CannotPerformOperationException $ex) {
+    die('Cannot safely perform decryption');
+  }
+	return str_replace("\0", "", $plaintext);
 }
 
 // Constant time string comparison.
@@ -247,5 +252,57 @@ function get_client_ip() {
         $ipaddress = 'UNKNOWN';
     return $ipaddress;
 }
+
+function HKDF($hash, $ikm, $length, $info = '', $salt = NULL)
+{
+  // Find the correct digest length.
+  $digest_length = strlen(hash_hmac($hash, '', '', true));
+
+  // Sanity-check the desired output length.
+  if (empty($length) || !is_int($length) ||
+      $length < 0 || $length > 255 * $digest_length) {
+    throw new Exception('Invalid digest length');
+  }
+
+  // "if [salt] not provided, is set to a string of HashLen zeroes."
+  if (is_null($salt)) {
+    $salt = str_repeat("\x00", $digest_length);
+  }
+
+  // HKDF-Extract:
+  // PRK = HMAC-Hash(salt, IKM)
+  // The salt is the HMAC key.
+  $prk = hash_hmac($hash, $ikm, $salt, true);
+
+  // HKDF-Expand:
+
+  // This check is useless, but it serves as a reminder to the spec.
+  if (strlen($prk) < $digest_length) {
+    throw new Exception('Cannot perform hash operation');
+  }
+
+  // T(0) = ''
+  $t = '';
+  $last_block = '';
+  for ($block_index = 1; strlen($t) < $length; $block_index++) {
+    // T(i) = HMAC-Hash(PRK, T(i-1) | info | 0x??)
+    $last_block = hash_hmac(
+      $hash,
+      $last_block . $info . chr($block_index),
+      $prk,
+      true
+    );
+    // T = T(1) | T(2) | T(3) | ... | T(N)
+    $t .= $last_block;
+  }
+
+  // ORM = first L octets of T
+  $orm = substr($t, 0, $length);
+  if ($orm === FALSE) {
+    throw new Exception('Cannot perform substr operation');
+  }
+  return bin2hex($orm);
+}
+
 
 ?>
