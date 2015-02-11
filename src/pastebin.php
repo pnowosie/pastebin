@@ -40,21 +40,20 @@ function commit_post($text, $jsCrypt, $burnread, $lifetime_seconds, $short = fal
 
     $id = get_database_id($urlKey);
     $encrypted = Encrypt($text, $urlKey);
-
-    $jsCrypted = $jsCrypt ? 1 : 0;
     $time = (int)(time() + $lifetime_seconds);
 
     $stmt = $db->prepare(
         'INSERT INTO pastes (`token`, `data`, `time`, `jscrypt`, `burnread`, `ipaddress`) 
          VALUES (:id, :encrypted, :time, :jsCrypted, :burnread, :ipaddress)'
     );
-	$stmt->execute(array(':id' => $id, 
+  $insrt = array(':id' => $id, 
 		':encrypted' => $encrypted, 
 		':time' => $time, 
-		':jsCrypted' => $jsCrypted,
-		':burnread' => $burnread,
+		':jsCrypted' => (int)$jsCrypt,
+		':burnread'  => (int)$burnread,
     ':ipaddress' => get_client_ip()                 
-	));
+	);
+	$stmt->execute($insrt);
 
     return $urlKey;
 }

@@ -50,7 +50,7 @@ header('Content-Type: text/html; charset=utf-8');
 </head>
 <body onload="init()">
 <div class="container">
-  <div class="center-block">
+  <div class="page-header">
     <h1><a href="/">ZeroBin</a></h1>
     <div class="lead">minimalist opensource zero-knowledge pastebin</div>
   </div>
@@ -178,43 +178,51 @@ header('Content-Type: text/html; charset=utf-8');
   }
   ?>
   
-	<form name="pasteform" id="pasteform" action="/src/add.php" method="post">
 
-	<textarea id="paste" name="paste" spellcheck="false" rows="30" cols="80"><?php
-          if(isset($postInfo) && !$postInfo['jscrypt'])
-		echo htmlentities($postInfo['text'], ENT_QUOTES);
-	  ?></textarea>
-
-	<input id="jscrypt" type="hidden" name="jscrypt" value="no" />
-	<input style="width:300px;" type="submit" name="submitpaste" value="Post Without Password Encryption" />
-	<input type="checkbox" name="shorturl" value="yes" /> Use shorter URL.
-  <input type="checkbox" name="burnread" value="yes" /> Burn after reading.
-     Expire in
-     <select name="lifetime">
-			 <option value="31104000">1 Year</option>
-			 <option value="15552000">6 Months</option>
-			 <option value="2592000">1 Month</option>
-			 <option value="864000">10 Days</option>
-			 <option value="86400" selected="selected">1 Day</option>
-			 <option value="3600">1 Hour</option>
-			 <option value="1800">30 Minutes</option>
-			 <option value="600">10 Minutes</option>
-			 <option value="180">3 Minutes</option>
-		 </select>
-  </form>
-
+  <div class="row">
+    <form name="pasteform" id="pasteform" action="/src/add.php" method="post">
+		<div class="col-md-8">
+		  <textarea id="paste" name="paste" spellcheck="false" rows="30" cols="80"><?php
+				  if(isset($postInfo) && !$postInfo['jscrypt'])
+			echo htmlentities($postInfo['text'], ENT_QUOTES);
+			?></textarea>
+		</div>
+		<div class="col-md-4">
+		  <p><button class="btn btn-success" type="submit" name="submitpaste">
+			<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>
+			Post
+		  </button></p>
+		  <p><input id="jscrypt" type="hidden" name="jscrypt" value="no" /</p>
+		  <p><input type="checkbox" name="shorturl" value="yes" disabled="disabled"/> Use shorter URL.</p>
+		  <p><input type="checkbox" name="burnread" value="yes" /> Burn after reading.</p>
+		  <p>Expire in <select name="lifetime">
+				 <option value="31104000">1 Year</option>
+				 <option value="15552000">6 Months</option>
+				 <option value="2592000">1 Month</option>
+				 <option value="864000">10 Days</option>
+				 <option value="86400" selected="selected">1 Day</option>
+				 <option value="3600">1 Hour</option>
+				 <option value="1800">30 Minutes</option>
+				 <option value="600">10 Minutes</option>
+				 <option value="180">3 Minutes</option>
+			   </select>
+		  </p>
+		</div>
+	</form>
+	</div>
 	<div id="encinfo">
 		<input type="password" id="pass1" value="" size="15" placeholder="Password" /> &nbsp;
 		<input type="password" id="pass2" value="" size="15" placeholder="Confirm" onkeyup="deriveKey()" /> &nbsp;
-    <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" onclick="generateKey()">
-      <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
-    </button>
-    <input type="text" id="key" value="" size="50" /> 
+	<button type="button" class="btn btn-default btn-xs" aria-label="Left Align" onclick="generateKey()">
+	  <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+	</button>
+	<input type="text" id="key" value="" size="50" /> 
 		<input type="button" value="Encrypt &amp; Post" onclick="encryptPaste()" /> 
 		<noscript>
 			<b>[ Please Enable JavaScript ]</b>
 		</noscript>
-	</div>  
+	</div> 
+
 
 <p style="padding: 20px;">
 <strong>Important Note:</strong> 
