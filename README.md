@@ -1,6 +1,6 @@
 Minimalist Open-Source Zero-Knowledge Pastebin
 ==============================================
-Play with online demo [here](http://0bin.7gb.pl).
+Play with online demo at [OpenShift](http://zero-pastebin0.rhcloud.com/) (be patient app is propably idle).
 
 Based on Defuse.ca's Pastebin
 -----------------------------
